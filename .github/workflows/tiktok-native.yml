@@ -1,0 +1,41 @@
+name: TikTok native platform verification
+on:
+  push:
+    branches: [ci/tiktok-native-20261110]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: TikTok source commit or branch to verify
+        default: feat/tiktok-integration
+        required: true
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: integrations/tiktok
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || 'feat/tiktok-integration' }}
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.14'
+      - name: Install optional video preview dependency
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: choco install ffmpeg --yes --no-progress
+      - name: Show source commit
+        run: git rev-parse HEAD
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - run: bun test --timeout 30000
+      - run: bun run verify
+      - run: bun verify.ts --package
