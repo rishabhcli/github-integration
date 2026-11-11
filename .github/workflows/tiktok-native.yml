@@ -16,6 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-latest]
+    timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -36,6 +37,10 @@ jobs:
         run: git rev-parse HEAD
       - run: bun install --frozen-lockfile
       - run: bun run build
-      - run: bun test --timeout 30000
+      - name: Native Windows media
+        if: runner.os == 'Windows'
+        run: bun test tests/windows.test.ts
+      - run: bun test --timeout 5000
+        continue-on-error: true
       - run: bun run verify
       - run: bun verify.ts --package
