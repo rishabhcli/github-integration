@@ -40,14 +40,12 @@ jobs:
       - name: Native Windows media
         if: runner.os == 'Windows'
         run: bun test tests/windows.test.ts
-        continue-on-error: true
       - name: Portable unit tests
         if: runner.os != 'Windows'
         run: bun test --timeout 5000
       - name: Windows unit tests with an external deadline
         if: runner.os == 'Windows'
         shell: pwsh
-        continue-on-error: true
         run: |
           $testProcess = Start-Process bun -ArgumentList @('test','--timeout','5000') -NoNewWindow -PassThru
           if (-not $testProcess.WaitForExit(60000)) { $testProcess.Kill(); throw 'Windows unit suite exceeded 60 seconds' }
